@@ -1,0 +1,4 @@
+PORT=3000
+MONGO_URI=mongodb://localhost:27017/local-business-platform
+TRIAL_DAYS=7
+GRACE_DAYS=3
