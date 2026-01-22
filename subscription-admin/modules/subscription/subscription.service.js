@@ -8,13 +8,13 @@ const GRACE_DAYS = Number(process.env.GRACE_DAYS || 3);
 export async function getSubscriptionDetail(businessId) {
 
   if (!isValidObjectId(businessId)) {
-    return { status: SUBSCRIPTION_STATUS.NO_SUBSCRIPTION };
+    return {code:404,  status: SUBSCRIPTION_STATUS.INVALID_ID };
   }
 
   const subscription = await subscriptionModel.findOne({ businessId });
 
   if (!subscription) {
-    return { status: SUBSCRIPTION_STATUS.NO_SUBSCRIPTION };
+    return {code:404 ,  status: SUBSCRIPTION_STATUS.NO_SUBSCRIPTION };
   }
 
   const today = new Date();
@@ -22,6 +22,7 @@ export async function getSubscriptionDetail(businessId) {
   // HARD STOP
   if (subscription.status === SUBSCRIPTION_STATUS.SUSPENDED) {
     return {
+      
       status: SUBSCRIPTION_STATUS.SUSPENDED,
       planType: subscription.planType
     };
@@ -51,6 +52,7 @@ export async function getSubscriptionDetail(businessId) {
     : null;
 
   return {
+    
     status: subscription.status,
     planType: subscription.planType,
     daysRemaining

@@ -21,7 +21,7 @@ export async function getStatus(req, res) {
 
     const details = await getSubscriptionDetail(businessId);
 
-    return res.status(200).json({
+    return res.status(details.code?details.code:200).json({
       success: true,
       message: "Subscription status fetched",
       data: details
