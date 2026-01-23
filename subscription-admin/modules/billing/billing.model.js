@@ -24,10 +24,14 @@ const billingSchema = new mongoose.Schema({
         type:String,
         default:"INR"
     },
+    planType:{type:String},
     status:{
         type:String,
         enum:["PENDING","PAID" ,"OVERDUE"],
         default:"PENDING"
+    },
+    paymentMode:{
+        type:String
     },
     paidAt:{
         type:Date

@@ -13,6 +13,8 @@ const adminRouter = Router();
 
 adminRouter.use(authMiddleware, isAdmin);
 
+adminRouter.post("/activate" , activateSubscriptionController);
+
 adminRouter.post("/extend", extendSubscriptionController);
 adminRouter.post("/suspend", suspendSubscriptionController);
 adminRouter.post("/reactivate", reactivateSubscriptionController);

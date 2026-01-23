@@ -6,8 +6,10 @@ import { logAudit } from "../audit/audit.service.js";
 export async function generateInvoice({
   businessId,
   subscriptionId,
+  planType,
   amount,
-  dueDate
+  dueDate,
+  paymentMode
 }) {
   const invoiceNumber = `INV-${Date.now()}`;
 
@@ -17,7 +19,9 @@ export async function generateInvoice({
     invoiceNumber,
     amount,
     dueDate,
-    status: "PENDING"
+    status: "PENDING",
+    paymentMode,
+    planType
   });
 }
 

@@ -1,14 +1,15 @@
 import subscriptionModel from "./subscription.model.js";
 import { isValidObjectId } from "./subscription.utils.js";
-import { SUBSCRIPTION_STATUS } from "./subscription.constants.js";
+import { SUBSCRIPTION_STATUS, SYSTEM_VAR ,PLAN_PRICING} from "./subscription.constants.js";
+import { generateInvoice } from "../billing/billing.service.js";
 
-const TRIAL_DAYS = Number(process.env.TRIAL_DAYS || 7);
-const GRACE_DAYS = Number(process.env.GRACE_DAYS || 3);
+const TRIAL_DAYS = Number(SYSTEM_VAR.TRIAL_DAYS || 7);
+const GRACE_DAYS = Number(SYSTEM_VAR.GRACE_DAYS || 3);
 
 export async function getSubscriptionDetail(businessId) {
 
   if (!isValidObjectId(businessId)) {
-    return {code:404,  status: SUBSCRIPTION_STATUS.INVALID_ID };
+    return {code:404,  status:SUBSCRIPTION_STATUS.INVALID_ID };
   }
 
   const subscription = await subscriptionModel.findOne({ businessId });
@@ -92,5 +93,86 @@ export async function startTrialService(businessId) {
     success: true,
     message: "Trial started successfully",
     data: subscription
+  };
+}
+
+
+export async function upgradePlanService({ businessId, planType, paymentMode }) {
+
+  //Validate businessId
+  if (!isValidObjectId(businessId)) {
+    return {
+      code: 400,
+      message: "Invalid businessId"
+    };
+  }
+
+  //Fetch subscription
+  const subscription = await subscriptionModel.findOne({ businessId });
+
+  if (!subscription) {
+    return {
+      code: 404,
+      message: "Subscription not found. Start trial first."
+    };
+  }
+
+  //Validate planType
+  const amount = PLAN_PRICING[planType];
+  if (!amount) {
+    return {
+      code: 400,
+      message: "Invalid plan type"
+    };
+  }
+
+  //Check existing pending invoice 
+  const existingInvoice = await Billing.findOne({
+    subscriptionId: subscription._id,
+    status: "PENDING"
+  });
+
+  if (existingInvoice) {
+    if (existingInvoice.planType === planType) {
+      return {
+        success: true,
+        message: "Payment already pending for selected plan",
+        data: {
+          invoiceId: existingInvoice._id,
+          planType: existingInvoice.planType,
+          amount: existingInvoice.amount,
+          dueDate: existingInvoice.dueDate
+        }
+      };
+    }
+
+    // cancel old invoice
+    existingInvoice.status = "CANCELLED";
+    await existingInvoice.save();
+  }
+
+  //Compute due date (policy-driven)
+  const dueDate = new Date();
+  dueDate.setDate(dueDate.getDate() + SYSTEM_VAR.INVOICE_DUE_DAYS);
+
+  //Generate new invoice
+  const invoice = await generateInvoice({
+    businessId,
+    subscriptionId: subscription._id,
+    planType,
+    amount,
+    dueDate,
+    paymentMode
+  });
+
+  return {
+    success: true,
+    message: "Upgrade initiated. Payment pending.",
+    data: {
+      invoiceId: invoice._id,
+      planType,
+      amount: invoice.amount,
+      dueDate: invoice.dueDate
+    }
   };
 }

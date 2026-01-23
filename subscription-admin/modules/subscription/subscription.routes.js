@@ -57,7 +57,6 @@ router.get("/status/:businessId", getStatus);
  * Error Response:
  * - 400 : Invalid businessId
  * - 400 : Subscription already exists
- * - 404 : Subscription not found
  * - 500 : Internal server error
  * 
  * Notes:
@@ -66,6 +65,19 @@ router.get("/status/:businessId", getStatus);
  * - This endpoint mutate database state
  */
 router.post("/start-trial", startTrial);
+
+/**
+ * POST /api/subscription/upgrade
+ * 
+ * Initiate an upgrade from trial or active or read_only or suspended or new subscription
+ * to a paid plan (MONTHLY or YEARLY)
+ * 
+ * @body {string} [businessId] - it's a 12 byte identifier(24 character hex string)
+ * @body {"MONTHLY" | "YEARLY" } [planType] - subscription plan to which user wants upgrade
+ * @body {string} [paymentMode] - Payment method (UPI , CARD etc.)
+ * 
+ * 
+ */
 router.post("/upgrade", upgradePlan);
 
 export default router;

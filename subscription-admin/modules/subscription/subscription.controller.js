@@ -1,10 +1,7 @@
 import {
-  activateSubscriptionService,
-  extendSubscription,
   getSubscriptionDetail,
-  reactiveSubscription,
   startTrialService,
-  suspendSubscription
+  upgradePlanService
 } from "./subscription.service.js";
 
 export async function getStatus(req, res) {
@@ -67,16 +64,13 @@ export async function startTrial(req, res) {
 
 export async function upgradePlan(req, res) {
   try {
-    // TODO (Phase 2):
-    // - validate input
-    // - generate invoice
-    // - update subscription after payment
-
-    return res.status(501).json({
-      success: false,
-      code: "NOT_IMPLEMENTED",
-      message: "Upgrade flow will be implemented in Phase 2"
-    });
+    const {businessId , planType ,paymentMode} = req.body;
+    const result = await upgradePlanService({businessId , planType , paymentMode});
+    return res.status(result.code ?result.code:200).json(
+      result.code
+      ?result.message
+      :result
+    );
 
   } catch (error) {
     console.error(error);
