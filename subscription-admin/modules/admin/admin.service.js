@@ -89,9 +89,12 @@ export async function reactivateSubscription(subscriptionId, adminId) {
   const subscription = await subscriptionModel.findById(subscriptionId);
 
   if (!subscription) {
-    return { success: false, message: "Invalid subscriptionId" };
+    return { success: false, message: "Invalid subscriptionId" ,code:404};
   }
-
+  const today = new Date();
+  if(subscription.graceEndsOn && today > subscription.graceEndsOn){
+    return {success:false , message:"Require subscription upgrade",code:400}
+  }
   subscription.status = SUBSCRIPTION_STATUS.ACTIVE;
   await subscription.save();
 

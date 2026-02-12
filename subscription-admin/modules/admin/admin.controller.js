@@ -89,13 +89,15 @@ export async function suspendSubscriptionController(req, res) {
 export async function reactivateSubscriptionController(req, res) {
   try {
     const { subscriptionId } = req.body;
-
+    if(!subscriptionId) return res.status(400).json({success:false , message:"subscriptionId is Required."})
     const result = await reactivateSubscription(
       subscriptionId,
       req.user.id
     );
 
-    return res.status(result.success ? 200 : 400).json(result);
+    return (result.success
+    ? res.status(200).json(result)
+    : res.status(result.code).json({success:false , message:result.message}));
 
   } catch (error) {
     console.error(error);

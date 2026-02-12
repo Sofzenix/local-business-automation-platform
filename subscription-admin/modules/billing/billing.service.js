@@ -1,7 +1,7 @@
 import Billing from "./billing.model.js";
 import { isValidObjectId } from "../subscription/subscription.utils.js";
-import { activateOrExtendSubscription } from "../subscription/subscription.service.js";
 import { logAudit } from "../audit/audit.service.js";
+import { activateSubscription } from "../admin/admin.service.js";
 
 export async function generateInvoice({
   businessId,
@@ -37,16 +37,25 @@ export async function markInvoiceAsPaid(invoiceId, adminId) {
     return { success: false, message: "Invoice not found" };
   }
 
-  if (invoice.status === "PAID") {
-    return { success: false, message: "Invoice already paid" };
+  if (invoice.status !== "PENDING") {
+    return {
+      success: false,
+      message: "Invoice cannot be marked as paid."
+    }
   }
+
+
 
   invoice.status = "PAID";
   invoice.paidAt = new Date();
   await invoice.save();
 
-  // activate / extend subscription
-  await activateOrExtendSubscription(invoice.subscriptionId);
+  const activationResult = await activateSubscription({
+    businessId: invoice.businessId,
+    planType: invoice.planType,
+    paymentMode: invoice.paymentMode,
+    adminId
+  });
 
   // audit
   await logAudit({
@@ -56,5 +65,13 @@ export async function markInvoiceAsPaid(invoiceId, adminId) {
     performedBy: adminId
   });
 
-  return { success: true };
+  if (!activationResult.success) {
+    return {
+      success: false,
+      message: "Invoice marked paid but activation failed"
+    };
+  }
+
+
+  return { success: true, message: "Invoice successfully marked as paid." };
 }

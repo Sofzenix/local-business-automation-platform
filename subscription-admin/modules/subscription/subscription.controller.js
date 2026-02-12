@@ -1,9 +1,8 @@
 import {
   getSubscriptionDetail,
   startTrialService,
-  upgradePlanService
+  upgradePlanService,
 } from "./subscription.service.js";
-
 export async function getStatus(req, res) {
   try {
     const { businessId } = req.params;
@@ -21,7 +20,7 @@ export async function getStatus(req, res) {
     return res.status(details.code?details.code:200).json({
       success: true,
       message: "Subscription status fetched",
-      data: details
+      data: details.code?details.status:details
     });
 
   } catch (error) {
@@ -71,7 +70,6 @@ export async function upgradePlan(req, res) {
       ?result.message
       :result
     );
-
   } catch (error) {
     console.error(error);
     return res.status(500).json({

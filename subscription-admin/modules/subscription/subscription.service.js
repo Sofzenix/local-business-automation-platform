@@ -133,19 +133,6 @@ export async function upgradePlanService({ businessId, planType, paymentMode }) 
   });
 
   if (existingInvoice) {
-    if (existingInvoice.planType === planType) {
-      return {
-        success: true,
-        message: "Payment already pending for selected plan",
-        data: {
-          invoiceId: existingInvoice._id,
-          planType: existingInvoice.planType,
-          amount: existingInvoice.amount,
-          dueDate: existingInvoice.dueDate
-        }
-      };
-    }
-
     // cancel old invoice
     existingInvoice.status = "CANCELLED";
     await existingInvoice.save();
@@ -176,3 +163,5 @@ export async function upgradePlanService({ businessId, planType, paymentMode }) 
     }
   };
 }
+
+

@@ -13,6 +13,7 @@ const router = Router();
  * GET /api/subscription/status/:businessId
  * 
  * Return the current subscription state for a business.
+ * 
  * @param{String} - Business identifier it's 12 byte (24 character hex string)
  * @returns{Object} Success response
  * {
@@ -36,6 +37,9 @@ router.get("/status/:businessId", getStatus);
 
 /**
  * POST /api/subscription/start-trial
+ * 
+ * Initializes a free trial subscription for a business.
+ * 
  * @body {string} - businessId : it's 12 byte (24 character hex string)
  * @returns {Object} Success response
  * {
@@ -50,7 +54,6 @@ router.get("/status/:businessId", getStatus);
  *             endDate:Date,
  *             graceEndsOn:Date,
  *             paymentMode:"NONE"
- *             
  *          }
  * }
  * 

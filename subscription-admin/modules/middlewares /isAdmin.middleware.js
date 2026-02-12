@@ -11,6 +11,6 @@ export function isAdmin(req, res, next) {
       message: "Admin access required"
     });
   }
-
-  return next();
+  console.log("isAdmin called ... ")
+  next();
 }

@@ -4,12 +4,14 @@ const billingSchema = new mongoose.Schema({
     businessId:{
         type:mongoose.Types.ObjectId,
         ref:"Business",
-        required:true
+        required:true,
+        index:true
     },
     subscriptionId:{
         type:mongoose.Types.ObjectId,
         ref:"subscription",
-        required:true
+        required:true,
+        index:true
     },
     invoiceNumber:{
         type:String,
@@ -24,18 +26,29 @@ const billingSchema = new mongoose.Schema({
         type:String,
         default:"INR"
     },
-    planType:{type:String},
+    planType:{
+        type:String,
+        enum:["MONTHLY","YEARLY"],
+        required:true
+    },
     status:{
         type:String,
-        enum:["PENDING","PAID" ,"OVERDUE"],
-        default:"PENDING"
+        enum:["PENDING","PAID" ,"OVERDUE","CANCELLED","FAILED"],
+        default:"PENDING",
+        index:true
     },
     paymentMode:{
-        type:String
+        type:String,
+        enum:["UPI","CARD","NETBANKING","CASH"],
+        default:"NONE"
+    },
+    dueDate:{
+        type:Date
     },
     paidAt:{
         type:Date
     }
+
 },
 {timestamps:true}
 );
