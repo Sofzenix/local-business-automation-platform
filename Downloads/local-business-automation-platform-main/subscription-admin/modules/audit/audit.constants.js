@@ -1,0 +1,4 @@
+export const AUDIT_ENTITY = {
+  SUBSCRIPTION: "SUBSCRIPTION",
+  BILLING: "BILLING"
+};
