@@ -277,32 +277,88 @@ ________________________________________________________________________________
 Name:Lakshit
 
 ## 🎯 Module Purpose
-Briefly explain what this module does and which local business problem it solves.
+**WhatsApp & SMS notification service** for businesses (Medical, Tiffin) to send real-time alerts, order confirmations, stock alerts, and daily summaries. Receives incoming WhatsApp messages via webhook with automatic SMS fallback.
 
 ## 🧩 Features
-- Feature 1
-- Feature 2
-- Feature 3
+
+- **Webhook Integration**: Receive & verify WhatsApp messages from Meta Cloud API
+- **Multi-Channel**: WhatsApp (primary) + SMS via Twilio (fallback)
+- **Business Handlers**: Medical (stock alerts, expiry alerts, summaries), Tiffin (stock alerts, menu, orders, summaries)
+- **Scheduled Tasks**: Daily summary (23:30), low stock alerts (10:00 AM), expiry alerts(09:00 AM) (configurable)
+- **Message Templates**: Stored in DB with Dynamic template variables ({{ordersCount}}, {{totalSales}}, etc.)
+- **Retry Logic**: Auto-retry WhatsApp → SMS fallback on failure
 
 ## 🔧 Tech Stack
-- Frontend:
-- Backend:
-- Database:
-- APIs / Libraries:
+- **Backend**: Node.js + Express.js (v5.2.1) + node-cron (v4.2.1)
+- **Database**: MongoDB (Mongoose v9.2.4)
+- **APIs**: Meta Graph API v18.0 (WhatsApp), Twilio SDK (SMS)
+- **Libraries**: Axios, Winston (logging), dotenv, body-parser
+- **Models**: Business, User, Order, OrderItem, ProductMenu, MessageTemplate, MessageLog, Notification, Subscription, Inventory
 
 ## 🔄 Workflow / Logic
-Step-by-step explanation of how your module works.
+**1. Webhook Verification**: `GET /webhook/whatsapp` → Verify token → HTTP 200 + challenge or HTTP 403
+
+**2. Incoming Message**: `POST /webhook/whatsapp` → Extract from `entry[0].changes[0].value.messages[0]` → Find Business by `metadata.display_phone_number` → Save MessageLog → Dispatch to business handler → HTTP 200
+
+**3. Outgoing Notification**: Event triggered → Fetch MessageTemplate → Fill variables → Send WhatsApp → On failure: retry then SMS fallback → Save status to DB
+
+**4. Scheduled Tasks**:
+
+- **23:30 Daily**: All active businesses → Daily summary
+- **10:00 AM Daily**: Medical businesses → Low stock alert
+- **09:00 AM Daily**: Medical businesses → Expiry alerts
+
+**5. Template Rendering**: `{{ordersCount}}`, `{{totalSales}}`, `{{itemsSummary}}` replaced with actual values via regex
 
 ## 🔗 Integration Points
-- Which modules interact with this one?
-- APIs or data shared
 
-## ▶️ How to Run This Module in VS Code
+- Modules That Interact With Notification Module
 
-### 1️⃣ Prerequisites
-- VS Code installed  
-- Node.js / Python (mention required version)
-- Git installed
+**User Onboarding & Authentication Module**
+Provides essential business details such as `businessId`, `businessType`, and `whatsappNumber`, which are used for accurate message routing and identification.
+
+**Subscription & Billing Module**
+Triggers important notifications including subscription reminders, expiry alerts, and account status updates to ensure uninterrupted service.
+
+**External APIs**:
+
+- `POST https://graph.facebook.com/v18.0/{PHONE_ID}/messages` → Send WhatsApp
+- `POST https://api.twilio.com/.../Messages.json` → Send SMS
+- `POST /webhook/whatsapp` → Receive incoming messages from Meta
+
+**Database Relations**: User (1:many) Business (1:many) Order, ProductMenu, Inventory, Notification, MessageLog | MessageTemplate (1:many) Notification | Order (1:many) OrderItem
+
+## ▶️ How to Run
+
+### Prerequisites
+
+- Node.js v16+ | MongoDB | Git | VS Code
+
+### Quick Setup
+
+```bash
+cd notificaitons
+cp .env.example .env          # Edit with WhatsApp & Twilio tokens
+npm install
+mongod                        # Start MongoDB (or use Atlas)
+npm run seed:templates        # Optional: populate templates
+npm run dev                   # Start server 
+```
+
+### Environment Variables (.env)
+
+```
+PORT=5000
+MONGO_URI=mongodb://127.0.0.1:27017/your_db
+
+WHATSAPP_TOKEN=your_token 
+WHATSAPP_PHONE_ID=your_id 
+VERIFY_TOKEN=your_token
+
+TWILIO_ACCOUNT_SID=xxx 
+TWILIO_AUTH_TOKEN=xxx 
+TWILIO_PHONE_NUMBER=+1234567890
+```
 _______________________________________________________________________________________________________________________________________________________________________________________________________________________
 
 # Module Name:subscription-admin
