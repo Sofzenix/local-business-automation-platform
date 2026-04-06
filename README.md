@@ -312,7 +312,7 @@ Name:Lakshit
 
 ## 🔗 Integration Points
 
-- Modules That Interact With Notification Module
+**Modules That Interact With Notification Module**
 
 **User Onboarding & Authentication Module**
 Provides essential business details such as `businessId`, `businessType`, and `whatsappNumber`, which are used for accurate message routing and identification.
