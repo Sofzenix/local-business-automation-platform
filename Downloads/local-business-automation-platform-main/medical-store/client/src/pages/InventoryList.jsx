@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 
 function InventoryList() {
   const [inventory, setInventory] = useState([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchInventory();
@@ -10,45 +9,52 @@ function InventoryList() {
 
   const fetchInventory = async () => {
     try {
-      const res = await fetch(
-        "http://localhost:5000/api/medical/inventory"
-      );
+      const res = await fetch("http://localhost:5000/api/medical/inventory");
       const data = await res.json();
-      setInventory(data);
+
+      console.log("API RESPONSE:", data);
+
+      // ✅ HANDLE BOTH FORMATS
+      if (Array.isArray(data)) {
+        setInventory(data);
+      } else if (Array.isArray(data.data)) {
+        setInventory(data.data);
+      } else {
+        setInventory([]);
+      }
+
     } catch (err) {
       console.error(err);
-    } finally {
-      setLoading(false);
+      setInventory([]);
     }
   };
-
-  if (loading) return <p>Loading inventory...</p>;
 
   return (
     <div style={{ marginTop: "30px" }}>
       <h3>Inventory Status</h3>
 
-      {inventory.length === 0 ? (
-        <p>No inventory available.</p>
-      ) : (
-        <table border="1" cellPadding="8">
-          <thead>
-            <tr>
-              <th>Medicine</th>
-              <th>Stock</th>
-              <th>Min Threshold</th>
-              <th>Expiry</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {inventory.map((inv) => (
+      <table border="1" cellPadding="10">
+        <thead>
+          <tr>
+            <th>Medicine</th>
+            <th>Stock</th>
+            <th>Min Threshold</th>
+            <th>Expiry</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {Array.isArray(inventory) &&
+            inventory.map((inv) => (
               <tr key={inv._id}>
                 <td>{inv.itemId?.itemName}</td>
                 <td>{inv.stockQty}</td>
                 <td>{inv.minThreshold}</td>
                 <td>
-                  {new Date(inv.itemId?.expiryDate).toLocaleDateString()}
+                  {inv.itemId?.expiryDate
+                    ? new Date(inv.itemId.expiryDate).toLocaleDateString()
+                    : "N/A"}
                 </td>
                 <td>
                   {inv.stockQty <= inv.minThreshold ? (
@@ -59,9 +65,8 @@ function InventoryList() {
                 </td>
               </tr>
             ))}
-          </tbody>
-        </table>
-      )}
+        </tbody>
+      </table>
     </div>
   );
 }

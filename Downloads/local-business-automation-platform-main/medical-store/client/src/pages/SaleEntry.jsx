@@ -15,9 +15,21 @@ function SaleEntry({ onSaleSuccess }) {
     try {
       const res = await fetch("http://localhost:5000/api/medical/inventory");
       const data = await res.json();
-      setInventory(data);
+
+      console.log("API RESPONSE:", data);
+
+      // ✅ FIX
+      if (Array.isArray(data)) {
+        setInventory(data);
+      } else if (Array.isArray(data.data)) {
+        setInventory(data.data);
+      } else {
+        setInventory([]);
+      }
+
     } catch (err) {
       console.error(err);
+      setInventory([]);
     }
   };
 
@@ -59,7 +71,7 @@ function SaleEntry({ onSaleSuccess }) {
 
       const data = await res.json();
 
-      if (!res.ok) {
+      if (!res.ok || !data.success) {
         setError(data.message || "Sale failed");
         return;
       }
@@ -70,6 +82,7 @@ function SaleEntry({ onSaleSuccess }) {
 
       await fetchInventory();
       if (onSaleSuccess) onSaleSuccess();
+
     } catch (err) {
       setError("Server error");
     }
@@ -89,11 +102,15 @@ function SaleEntry({ onSaleSuccess }) {
           required
         >
           <option value="">Select Medicine</option>
-          {inventory.map((inv) => (
-            <option key={inv._id} value={inv.itemId._id}>
-              {inv.itemId.itemName} (Stock: {inv.stockQty})
-            </option>
-          ))}
+
+          {Array.isArray(inventory) &&
+            inventory
+              .filter((inv) => inv.itemId)
+              .map((inv) => (
+                <option key={inv._id} value={inv.itemId._id}>
+                  {inv.itemId.itemName} (Stock: {inv.stockQty})
+                </option>
+              ))}
         </select>
 
         <br /><br />

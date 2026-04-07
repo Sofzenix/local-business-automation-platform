@@ -4,8 +4,8 @@ const sendWhatsAppAlert = require("../utils/whatsappService");
 
 console.log("✅ Expiry cron file loaded");
 
-// ⏰ Runs every 30 seconds (FOR TESTING)
-cron.schedule("0 9 * * * * *", async () => {
+// ⏰ every 10 seconds (for testing)
+cron.schedule("*/10 * * * * *", async () => {
   console.log("🔄 Running Expiry Alert Cron");
 
   try {
@@ -22,12 +22,22 @@ cron.schedule("0 9 * * * * *", async () => {
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
       if (diffDays === 30 || diffDays === 15 || diffDays === 7) {
+        
+        // ✅ Console log
         console.log(
           `⏰ EXPIRY ALERT: ${med.itemName} expires in ${diffDays} days`
         );
 
+        // ✅ EVENT LOG (IMPORTANT FOR TEAM)
+        console.log("EVENT: EXPIRY_ALERT", {
+          itemName: med.itemName,
+          daysLeft: diffDays,
+          expiryDate: expiryDate.toDateString()
+        });
+
+        // ✅ WhatsApp (for demo)
         await sendWhatsAppAlert(
-          `⏰ EXPIRY ALERT (${diffDays} days)\nMedicine: ${med.itemName}\nExpiry Date: ${expiryDate.toDateString()}`
+          `⏰ EXPIRY ALERT (${diffDays} days)\nMedicine: ${med.itemName}\nExpiry: ${expiryDate.toDateString()}`
         );
       }
     }
