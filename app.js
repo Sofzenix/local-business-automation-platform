@@ -1,8 +1,11 @@
-import express from 'express';
+import express from "express";
 
 // Subscription
-import subscriptionRouter from './subscription-admin/subscription/subscription.routes.js';
-import adminRouter from './subscription-admin/admin/admin.routes.js';
+import subscriptionRouter from "./subscription-admin/subscription/subscription.routes.js";
+import adminRouter from "./subscription-admin/admin/admin.routes.js";
+
+// Notification (WhatsApp webhook)
+import webhookRoutes from "./notifications/src/routes/webhookRoutes.js";
 
 // Auth
 // import authRouter from './auth-onboarding/...';
@@ -27,22 +30,18 @@ app.use(express.json());
 /* ---------------------- ROUTES ---------------------- */
 
 // Subscription Module
-app.use('/api/subscription', subscriptionRouter);
-app.use('/api/admin', adminRouter);
+app.use("/api/subscription", subscriptionRouter);
+app.use("/api/admin", adminRouter);
 
 // Auth Module
 
-
 // Dashboard Module
-
 
 // Medical Module
 
-
 // Notification Module
-
+app.use("/webhook", webhookRoutes);
 
 // Tiffin Module
-
 
 export default app;
